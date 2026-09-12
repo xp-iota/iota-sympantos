@@ -1,0 +1,32 @@
+[package]
+name = "iota-sympantos-kanban"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Event-sourced Kanban task orchestration for AI coding agents"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/feuyeux/iota-sympantos"
+homepage = "https://github.com/feuyeux/iota-sympantos"
+keywords = ["kanban", "agent", "task", "event-sourcing"]
+categories = ["development-tools", "data-structures"]
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+dirs.workspace = true
+futures-util.workspace = true
+hex.workspace = true
+hostname.workspace = true
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+
+[lib]
+name = "iota_kanban"
+path = "src/lib.rs"

@@ -1,0 +1,44 @@
+[workspace]
+members = [
+    "crates/iota-core",
+    "crates/iota-cli",
+    "crates/iota-desktop/src-tauri",
+    "crates/iota-kanban",
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95.0"
+
+[workspace.dependencies]
+anyhow = "1.0.102"
+chrono = "0.4.44"
+crossterm = { version = "0.28.1", features = ["bracketed-paste", "event-stream"] }
+dirs = "6.0.0"
+futures-util = "0.3.32"
+hex = "0.4.3"
+hostname = "0.4.2"
+opentelemetry = "0.29.1"
+opentelemetry-appender-tracing = "0.29.1"
+opentelemetry-otlp = { version = "0.29.0", features = ["grpc-tonic", "trace", "metrics", "logs"] }
+opentelemetry_sdk = { version = "0.29.0", features = ["rt-tokio"] }
+pulldown-cmark = "0.12.2"
+ratatui = { version = "0.29.0", features = ["scrolling-regions", "unstable-backend-writer", "unstable-rendered-line-info", "unstable-widget-ref"] }
+reqwest = { version = "0.13.3", features = ["json", "blocking"] }
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.150"
+serde_yaml = "0.9.34"
+sha2 = "0.10.9"
+tokio = { version = "1.52.3", features = ["full"] }
+tokio-util = "0.7.18"
+tracing = "0.1.44"
+tracing-opentelemetry = "0.30.0"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "fmt", "registry"] }
+unicode-segmentation = "1.13.2"
+unicode-width = "0.2.0"
+urlencoding = "2.1.3"
+uuid = { version = "1.23.1", features = ["v4", "serde"] }
+iota-kanban = { package = "iota-sympantos-kanban", version = "0.1.0", path = "crates/iota-kanban" }

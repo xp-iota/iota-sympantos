@@ -1,0 +1,36 @@
+[package]
+name = "iota-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "Command line and TUI front end for iota-sympantos"
+license = "MIT"
+repository = "https://github.com/feuyeux/iota-sympantos"
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+crossterm.workspace = true
+dirs.workspace = true
+futures-util.workspace = true
+hostname.workspace = true
+iota-core = { package = "iota-sympantos-core", version = "0.1.0", path = "../iota-core", features = ["kanban"] }
+iota-kanban = { workspace = true }
+pulldown-cmark.workspace = true
+ratatui.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+unicode-segmentation.workspace = true
+unicode-width.workspace = true
+urlencoding.workspace = true
+uuid.workspace = true
+
+[build-dependencies]
+chrono.workspace = true
+
+[[bin]]
+name = "iota"
+path = "src/main.rs"

@@ -1,0 +1,94 @@
+# cargo-deny configuration.
+#
+# Runs in CI (`.github/workflows/ci.yml`, job `supply-chain`) so a dependency
+# update that introduces a known vulnerability, an incompatible license, or a
+# second copy of a large crate fails the build instead of being noticed later.
+#
+# Reproduce locally:
+#   cargo install cargo-deny
+#   cargo deny check
+
+[graph]
+# Check every target the project supports, not just the host: an advisory in a
+# Windows-only dependency must fail on a Linux runner too.
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "aarch64-apple-darwin" },
+    { triple = "x86_64-pc-windows-msvc" },
+]
+all-features = false
+
+[advisories]
+version = 2
+# Every entry needs a reason and, where relevant, what would let us drop it.
+# Anything not listed here fails the build.
+ignore = [
+    # quick-xml 0.39 is reached only through `plist`, which tauri pins at `^1`;
+    # the fix landed in quick-xml 0.41, so it cannot be taken until plist (and
+    # then tauri) move. Both advisories are denial of service while parsing
+    # untrusted XML, and the only XML iota's dependency chain parses is the
+    # bundle's own Info.plist at build/packaging time — not attacker input.
+    { id = "RUSTSEC-2026-0194", reason = "quick-xml <0.41 via plist <- tauri; DoS only on untrusted XML, which this chain does not parse" },
+    { id = "RUSTSEC-2026-0195", reason = "quick-xml <0.41 via plist <- tauri; DoS only on untrusted XML, which this chain does not parse" },
+
+    # Unmaintained transitive crates with no successor available. None carries a
+    # known vulnerability; they fail only the `unmaintained` check.
+    { id = "RUSTSEC-2024-0436", reason = "paste 1.0.15 is a proc macro pulled in by ratatui 0.29; no replacement until ratatui drops it" },
+    { id = "RUSTSEC-2024-0370", reason = "proc-macro-error 1.0.4 is a transitive build dependency; no replacement offered upstream" },
+    { id = "RUSTSEC-2025-0075", reason = "unic-char-range via urlpattern <- tauri-utils; the rust-unic tree is archived with no safe upgrade" },
+    { id = "RUSTSEC-2025-0080", reason = "unic-common via urlpattern <- tauri-utils; the rust-unic tree is archived with no safe upgrade" },
+    { id = "RUSTSEC-2025-0081", reason = "unic-char-property via urlpattern <- tauri-utils; the rust-unic tree is archived with no safe upgrade" },
+    { id = "RUSTSEC-2025-0098", reason = "unic-ucd-version via urlpattern <- tauri-utils; the rust-unic tree is archived with no safe upgrade" },
+    { id = "RUSTSEC-2025-0100", reason = "unic-ucd-ident via urlpattern <- tauri-utils; the rust-unic tree is archived with no safe upgrade" },
+]
+
+[licenses]
+version = 2
+# Permissive licenses plus the weak-copyleft ones that only apply per-file, which
+# is compatible with shipping a binary.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[[licenses.exceptions]]
+# Ring's license bundle is OpenSSL-style plus ISC; it is widely used through
+# rustls and is acceptable for redistribution.
+name = "ring"
+allow = ["LicenseRef-ring"]
+
+[[licenses.clarify]]
+name = "ring"
+expression = "LicenseRef-ring"
+license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
+
+[bans]
+# Duplicate versions are a warning, not an error: the dependency tree is wide
+# (tauri, opentelemetry, reqwest) and forcing a single version of every
+# transitive crate is not achievable without patching upstreams.
+multiple-versions = "warn"
+wildcards = "deny"
+highlight = "all"
+
+[[bans.deny]]
+# `openssl-sys` links the system OpenSSL, which breaks the cross-platform
+# promise (Windows and macOS builds would need a system library). rustls is the
+# intended TLS stack.
+name = "openssl-sys"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

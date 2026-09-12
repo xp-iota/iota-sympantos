@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --app-canvas: #090d16;
+  --app-surface: #0e1422;
+  --app-surface-raised: #151d2e;
+  --app-surface-muted: #1b2536;
+  --app-border: #253146;
+  --app-border-strong: #3a4961;
+  --app-text: #dce5f2;
+  --app-text-strong: #f5f8fc;
+  --app-text-muted: #a3afc2;
+  --app-text-subtle: #748198;
+  --app-text-faint: #526077;
+  --app-accent: #ff6c37;
+  --app-accent-hover: #ee5420;
+  --app-success: #6ee7b7;
+  --app-success-strong: #10b981;
+  --app-warning: #fcd34d;
+  --app-warning-strong: #f59e0b;
+  --app-danger: #fda4af;
+  --app-danger-strong: #f43f5e;
+  --app-info: #7dd3fc;
+  --app-info-strong: #0ea5e9;
+  --app-blue: #60a5fa;
+  --app-blue-strong: #3b82f6;
+  --app-cyan: #67e8f9;
+  --app-cyan-strong: #06b6d4;
+  --app-indigo: #a5b4fc;
+  --app-indigo-strong: #6366f1;
+  --app-shadow: rgba(0, 0, 0, 0.38);
+  --app-scrollbar: rgba(148, 163, 184, 0.2);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --app-canvas: #f4f6f9;
+  --app-surface: #ffffff;
+  --app-surface-raised: #f8fafc;
+  --app-surface-muted: #edf1f6;
+  --app-border: #d7dee9;
+  --app-border-strong: #b9c5d5;
+  --app-text: #273449;
+  --app-text-strong: #111827;
+  --app-text-muted: #526176;
+  --app-text-subtle: #6f7d91;
+  --app-text-faint: #8c98a9;
+  --app-accent: #df4c18;
+  --app-accent-hover: #c53c0c;
+  --app-success: #047857;
+  --app-success-strong: #059669;
+  --app-warning: #9a5808;
+  --app-warning-strong: #d97706;
+  --app-danger: #be123c;
+  --app-danger-strong: #e11d48;
+  --app-info: #0369a1;
+  --app-info-strong: #0284c7;
+  --app-blue: #1d4ed8;
+  --app-blue-strong: #2563eb;
+  --app-cyan: #0e7490;
+  --app-cyan-strong: #0891b2;
+  --app-indigo: #4338ca;
+  --app-indigo-strong: #4f46e5;
+  --app-shadow: rgba(35, 48, 68, 0.16);
+  --app-scrollbar: rgba(82, 97, 118, 0.28);
+}
+
+@theme inline {
+  --color-primary: var(--app-accent);
+  --color-primary-hover: var(--app-accent-hover);
+  --color-app-canvas: var(--app-canvas);
+  --color-app-surface: var(--app-surface);
+  --color-app-surface-raised: var(--app-surface-raised);
+  --color-app-surface-muted: var(--app-surface-muted);
+  --color-app-divider: var(--app-border);
+
+  --color-slate-955: var(--app-canvas);
+  --color-slate-950: var(--app-canvas);
+  --color-slate-900: var(--app-surface-raised);
+  --color-slate-850: var(--app-border);
+  --color-slate-805: var(--app-border);
+  --color-slate-800: var(--app-border);
+  --color-slate-700: var(--app-border-strong);
+  --color-slate-600: var(--app-text-faint);
+  --color-slate-500: var(--app-text-subtle);
+  --color-slate-400: var(--app-text-muted);
+  --color-slate-350: var(--app-text-muted);
+  --color-slate-300: var(--app-text);
+  --color-slate-250: var(--app-text-strong);
+  --color-slate-200: var(--app-text-strong);
+  --color-slate-100: var(--app-text-strong);
+
+  --color-gray-500: var(--app-text-subtle);
+  --color-gray-400: var(--app-text-muted);
+  --color-gray-100: var(--app-text-strong);
+  --color-neutral-400: var(--app-text-muted);
+  --color-neutral-100: var(--app-text-strong);
+
+  --color-emerald-200: var(--app-success);
+  --color-emerald-300: var(--app-success);
+  --color-emerald-400: var(--app-success);
+  --color-emerald-500: var(--app-success-strong);
+  --color-amber-200: var(--app-warning);
+  --color-amber-300: var(--app-warning);
+  --color-amber-400: var(--app-warning);
+  --color-amber-450: var(--app-warning);
+  --color-amber-500: var(--app-warning-strong);
+  --color-red-300: var(--app-danger);
+  --color-red-350: var(--app-danger);
+  --color-red-400: var(--app-danger);
+  --color-red-450: var(--app-danger);
+  --color-red-500: var(--app-danger-strong);
+  --color-rose-300: var(--app-danger);
+  --color-rose-400: var(--app-danger);
+  --color-rose-500: var(--app-danger-strong);
+  --color-sky-200: var(--app-info);
+  --color-sky-300: var(--app-info);
+  --color-sky-400: var(--app-info);
+  --color-sky-500: var(--app-info-strong);
+  --color-blue-200: var(--app-blue);
+  --color-blue-300: var(--app-blue);
+  --color-blue-400: var(--app-blue);
+  --color-blue-500: var(--app-blue-strong);
+  --color-cyan-200: var(--app-cyan);
+  --color-cyan-300: var(--app-cyan);
+  --color-cyan-400: var(--app-cyan);
+  --color-cyan-500: var(--app-cyan-strong);
+  --color-indigo-200: var(--app-indigo);
+  --color-indigo-300: var(--app-indigo);
+  --color-indigo-400: var(--app-indigo);
+  --color-indigo-500: var(--app-indigo-strong);
+
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--app-canvas);
+  color: var(--app-text);
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+button,
+select,
+textarea,
+input {
+  font-family: inherit;
+}
+
+button:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--app-accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+select option {
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--app-accent) 24%, transparent);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--app-scrollbar);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--app-text-muted) 45%, transparent);
+}
+
+.app-title-gradient {
+  background: linear-gradient(90deg, var(--app-text-strong), var(--app-text-muted));
+  background-clip: text;
+  color: transparent;
+}
+
+.theme-toggle {
+  box-shadow: 0 8px 24px var(--app-shadow);
+}
+
+@media (min-width: 1024px) {
+  .theme-toggle {
+    position: fixed;
+    top: 12px;
+    right: 16px;
+    z-index: 50;
+  }
+}
+
+@keyframes iota-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 4px rgba(255, 108, 55, 0.4)) drop-shadow(0 0 1px rgba(245, 158, 11, 0.3));
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(255, 108, 55, 0.7)) drop-shadow(0 0 4px rgba(245, 158, 11, 0.5));
+  }
+}
+
+@keyframes iota-rotate-clockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes iota-rotate-counter {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.iota-logo-core {
+  transform-origin: 50px 50px;
+  animation: iota-pulse 3s ease-in-out infinite;
+}
+
+.iota-logo-ring-outer {
+  transform-origin: 50px 50px;
+  animation: iota-rotate-clockwise 14s linear infinite;
+}
+
+.iota-logo-ring-inner {
+  transform-origin: 50px 50px;
+  animation: iota-rotate-counter 10s linear infinite;
+}
+
+.iota-logo-container:hover .iota-logo-core {
+  animation: iota-pulse 1.2s ease-in-out infinite;
+}
+
+.iota-logo-container:hover .iota-logo-ring-outer {
+  animation: iota-rotate-clockwise 4s linear infinite;
+}
+
+.iota-logo-container:hover .iota-logo-ring-inner {
+  animation: iota-rotate-counter 3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

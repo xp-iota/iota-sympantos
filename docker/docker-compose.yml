@@ -1,0 +1,94 @@
+services:
+  iota-daemon:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    container_name: iota-daemon
+    ports:
+      - "47661:47661"
+    environment:
+      - IOTA_DAEMON_ADDR=0.0.0.0:47661
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    volumes:
+      # 持久化存储 SQLite 数据库（memory.sqlite, events.sqlite, sessions.sqlite, approvals.sqlite）
+      - iota-config:/home/iota/.i6
+      # 挂载待开发的工作区，使用宿主机当前目录的父目录（项目根目录）
+      - ../:/workspace
+    networks:
+      - iota-network
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib@sha256:d57bfe8eee2378f31cb1193239fbcac521d54a5a071fca2bfc106916a32b892d
+    container_name: otel-collector
+    ports:
+      - "${OTEL_GRPC_PORT:-4317}:4317"
+      - "${OTEL_HTTP_PORT:-4318}:4318"
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    networks:
+      - iota-network
+    depends_on:
+      - jaeger
+      - loki
+
+  jaeger:
+    image: jaegertracing/jaeger@sha256:6266573208d665ce5c17483bce0a75d0806480d92c84766d288d0aee885ce708
+    container_name: jaeger
+    ports:
+      - "${JAEGER_PORT:-16686}:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - iota-network
+
+  prometheus:
+    image: prom/prometheus@sha256:e4254400b85610324913f0dc4acf92603d9984e7519414c5a12811aa6146acc3
+    container_name: prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --storage.tsdb.retention.time=30d
+    networks:
+      - iota-network
+
+  loki:
+    image: grafana/loki@sha256:73e905b51a7f917f7a1075e4be68759df30226e03dcb3cd2213b989cc0dc8eb4
+    container_name: loki
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    networks:
+      - iota-network
+
+  grafana:
+    image: grafana/grafana@sha256:0f86bada30d65ef9d0183b90c1e2682ac92d53d95da8bed322b984ea78a4a73a
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - iota-network
+    depends_on:
+      - jaeger
+      - prometheus
+      - loki
+
+networks:
+  iota-network:
+    name: iota-network
+    driver: bridge
+
+volumes:
+  iota-config:
+    name: iota-config

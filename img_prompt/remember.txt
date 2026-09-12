@@ -1,0 +1,9 @@
+npm i gpt-image-2-style-library
+
+根据当前代码实现 使用 gpt-image-2-style-library 更新 /Users/han/coding/creative/iota-sympantos/img_prompt 全部提示词
+
+/goal "使用imagegen技能 为 img_prompt/iota-sympantos-diagrams.md 每个提示词 生图；注意生图之间要有时间间隔 避免被限流；生成好的图片 保存到 img_result 目录下 并在原文的相应位置对其引用"
+
+/goal "根据当前代码实现 使用 gpt-image-2-style-library 更新 img_prompt/iota-sympantos-diagrams.md 的全部提示词；
+使用imagegen技能 为 img_prompt/iota-sympantos-diagrams.md 每个提示词 生图 high outputQuality；
+注意生图之间要有时间间隔 比如sleep10秒 避免被限流；生成好的图片 保存到 img_result 目录下"

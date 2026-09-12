@@ -1,0 +1,30 @@
+[package]
+name = "iota-desktop"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "A Tauri App for iota-sympantos"
+license = "MIT"
+repository = "https://github.com/feuyeux/iota-sympantos"
+# The desktop app ships as a bundle, not as a crates.io package.
+publish = false
+
+[lib]
+name = "iota_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [] }
+
+[dependencies]
+tauri = { version = "2.11.2", features = ["devtools"] }
+tauri-plugin-opener = "2.5.4"
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+serde_yaml.workspace = true
+tokio.workspace = true
+dirs.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+iota-core = { package = "iota-sympantos-core", version = "0.1.1", path = "../../iota-core", features = ["kanban"] }
+iota-kanban = { package = "iota-sympantos-kanban", version = "0.1.0", path = "../../iota-kanban" }

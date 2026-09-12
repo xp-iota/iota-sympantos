@@ -1,0 +1,34 @@
+{
+  "name": "cratesiota-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_OPTIONS=--disable-warning=DEP0205 node run.mjs",
+    "dev:frontend": "NODE_OPTIONS=--disable-warning=DEP0205 vite",
+    "dev:clean": "NODE_OPTIONS=--disable-warning=DEP0205 node ../../scripts/dev-desktop.mjs",
+    "build": "NODE_OPTIONS=--disable-warning=DEP0205 tsc && NODE_OPTIONS=--disable-warning=DEP0205 vite build",
+    "preview": "NODE_OPTIONS=--disable-warning=DEP0205 vite preview",
+    "tauri": "NODE_OPTIONS=--disable-warning=DEP0205 tauri",
+    "test": "node --test --import tsx \"src/**/*.test.ts\" \"src/**/*.test.tsx\""
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-opener": "^2.5.4",
+    "lucide-react": "^1.16.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@tauri-apps/cli": "^2.11.2",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "tailwindcss": "^4.3.0",
+    "tsx": "^4.22.3",
+    "typescript": "~5.8.3",
+    "vite": "^7.3.3"
+  }
+}
