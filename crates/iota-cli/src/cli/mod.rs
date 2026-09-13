@@ -22,8 +22,13 @@ enum BenchMode {
 }
 
 pub async fn run() -> Result<()> {
-    let _otel_guard = telemetry::init(&TelemetryConfig::default())?;
     let args: Vec<String> = std::env::args().skip(1).collect();
+    let telemetry_config = if args.is_empty() {
+        TelemetryConfig::for_tui()
+    } else {
+        TelemetryConfig::default()
+    };
+    let _otel_guard = telemetry::init(&telemetry_config)?;
 
     if let Some(command) = args.first().map(String::as_str) {
         match command {

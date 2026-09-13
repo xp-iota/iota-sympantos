@@ -26,19 +26,173 @@ iota run --backend claude "解释递归"    # 指定后端
 iota check                              # 检查后端配置
 ```
 
-## 开发
+## 开发阶段脚本
+
+脚本按平台提供 `.sh` 和 `.ps1` 两套入口。macOS/Linux 使用 `.sh`，Windows
+PowerShell 使用 `.ps1`。所有后端和模型配置只从 `~/.i6/nimia.yaml` 读取。
+
+首次开发先初始化模型配置，然后在文件中填写 provider、model、base URL 和
+API key：
+
+```bash
+./scripts/configure-model.sh --init --open
+```
+
+Windows：
+
+```powershell
+.\scripts\configure-model.ps1 -Init -Open
+```
+
+配置文件已经存在时，脚本不会覆盖它。也可以直接使用 `--open` / `-Open`
+打开已有配置。`--open` 优先使用 `$VISUAL` 或 `$EDITOR`；未设置时，
+macOS 使用系统默认文本编辑器，Linux 使用 `xdg-open`。不要把真实的
+`nimia.yaml` 提交到 Git。
+
+启动 CLI/TUI：
+
+```bash
+./scripts/dev-cli.sh
+./scripts/dev-cli.sh check
+./scripts/dev-cli.sh run codex "ping"
+```
+
+Windows：
+
+```powershell
+.\scripts\dev-cli.ps1
+.\scripts\dev-cli.ps1 check
+.\scripts\dev-cli.ps1 run codex "ping"
+```
+
+启动桌面 App：
+
+```bash
+./scripts/run-desktop.sh
+```
+
+该脚本会停止旧的 iota daemon 和桌面开发服务器，构建当前 debug CLI，
+必要时执行 `npm install`，再启动 Tauri dev。只停止旧进程：
+
+```bash
+./scripts/run-desktop.sh --stop-only
+```
+
+Windows PowerShell 使用同一个跨平台 Node 入口：
+
+```powershell
+cd crates\iota-desktop
+npm run dev:clean
+```
+
+`npm run dev:clean -- --stop-only` 只停止旧 daemon 和桌面开发服务器。
+
+Windows/macOS/Linux 的桌面前端依赖都从 `crates/iota-desktop/package-lock.json`
+安装。首次或依赖变更时也可以手动执行：
+
+```bash
+cd crates/iota-desktop && npm ci
+```
+
+常用的直接开发命令仍然可用：
 
 ```bash
 cargo test               # 运行全部测试
 cargo check --offline
 RUST_LOG=debug cargo run -p iota-cli --quiet
 cargo run -p iota-cli --quiet -- run codex "ping" --timing
+```
 
-# 启动桌面端开发模式 (Tauri)
-# npm install -D @tauri-apps/cli@latest
-## ubuntu
-# sudo apt-get update && sudo apt-get install -y libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev libsoup-3.0-dev
-cd crates/iota-desktop && npm run dev:clean
+## 构建 CLI 和桌面安装包
+
+构建 release CLI：
+
+```bash
+./scripts/build-cli.sh
+# 产物：target/release/iota
+```
+
+Windows：
+
+```powershell
+.\scripts\build-cli.ps1
+# 产物：target\release\iota.exe
+```
+
+构建 Tauri 桌面安装包：
+
+```bash
+./scripts/build-app.sh
+# 产物目录：target/release/bundle
+```
+
+Windows：
+
+```powershell
+.\scripts\build-app.ps1
+# 产物目录：target\release\bundle
+```
+
+`build-app` 会在 `crates/iota-desktop/node_modules` 不存在时执行
+`npm ci`，然后运行 `tauri build`。Tauri 根据当前平台生成 `.app`、`.dmg`、
+`.AppImage`、`.deb`、`.msi` 或 `.exe` 等安装包。
+
+## 安装和卸载
+
+安装 release CLI 到用户目录：
+
+```bash
+./scripts/install.sh --cli
+```
+
+默认安装到 `~/.local/bin/iota`。可以通过 `IOTA_INSTALL_DIR` 指定目录。
+安装桌面包时显式传入构建产物：
+
+```bash
+./scripts/install.sh --app target/release/bundle/macos/iota-desktop.app
+./scripts/install.sh --app target/release/bundle/appimage/iota-desktop.AppImage
+./scripts/install.sh --app target/release/bundle/deb/iota-desktop_*.deb
+```
+
+`--all` 会同时安装 CLI，并按当前平台自动查找桌面包：
+
+```bash
+./scripts/install.sh --all
+```
+
+Windows：
+
+```powershell
+.\scripts\install.ps1 -Cli
+.\scripts\install.ps1 -App .\target\release\bundle\msi\iota-desktop_0.1.0_x64_en-US.msi
+.\scripts\install.ps1 -All
+```
+
+Unix 安装脚本把 CLI 放到 `~/.local/bin`，macOS App 放到
+`~/Applications`，Linux AppImage 放到 `~/.local/bin`；`.deb` 使用
+`dpkg` 安装。Windows 脚本把 CLI 放到 `%USERPROFILE%\.local\bin`，
+桌面 `.msi` 或 `.exe` 交给平台安装器处理。
+
+卸载脚本只删除脚本管理的用户级 CLI 和桌面副本，保留配置、记忆、日志和
+Kanban 数据：
+
+```bash
+./scripts/uninstall.sh
+```
+
+Windows 桌面包由 MSI/Windows 安装器管理；先在系统设置中卸载桌面 App，
+再执行：
+
+```powershell
+.\scripts\uninstall.ps1
+```
+
+如果只需要查看脚本帮助：
+
+```bash
+./scripts/configure-model.sh --help
+./scripts/run-desktop.sh --help
+./scripts/install.sh --help
 ```
 
 ## 可复用 crates

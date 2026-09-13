@@ -8,7 +8,7 @@ DESKTOP_DEV_PORTS="${IOTA_DESKTOP_DEV_PORTS:-1420 1421}"
 
 usage() {
   cat <<'USAGE'
-Usage: scripts/dev-desktop.sh [--stop-only] [--] [extra npm tauri args...]
+Usage: scripts/run-desktop.sh [--stop-only] [--] [extra npm tauri args...]
 
 Stops existing iota daemon and desktop dev-server processes before starting the
 Tauri desktop dev app.

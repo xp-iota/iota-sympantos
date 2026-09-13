@@ -81,11 +81,6 @@ CREATE TABLE IF NOT EXISTS event_sync_cursors (
     updated_at      INTEGER NOT NULL,
     source_sequence INTEGER
 );
--- Event identity is the UUID, not the local `id`: deduplicating an already
--- imported event must be a lookup, and a UNIQUE index makes that O(log n)
--- while also rejecting a genuine uuid collision rather than storing it twice.
-CREATE UNIQUE INDEX IF NOT EXISTS idx_events_uuid ON events(event_uuid)
-    WHERE event_uuid IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_tasks_board_status ON tasks(board_id, status);
 CREATE INDEX IF NOT EXISTS idx_tasks_assignee     ON tasks(assignee);
 CREATE INDEX IF NOT EXISTS idx_runs_task          ON runs(task_id);

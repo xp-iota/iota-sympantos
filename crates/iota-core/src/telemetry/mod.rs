@@ -2,7 +2,7 @@ pub mod metrics;
 pub mod redact;
 pub mod stderr;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use opentelemetry::KeyValue;
 use opentelemetry::global;
 use opentelemetry::trace::TracerProvider as _;
@@ -15,6 +15,7 @@ use tracing_subscriber::{EnvFilter, Layer, layer::SubscriberExt, util::Subscribe
 pub struct TelemetryConfig {
     pub endpoint: String,
     pub enabled: bool,
+    pub log_to_file: bool,
 }
 
 impl Default for TelemetryConfig {
@@ -33,7 +34,16 @@ impl TelemetryConfig {
             enabled: enabled
                 .map(otel_enabled_value)
                 .unwrap_or_else(|| endpoint.is_some()),
+            log_to_file: false,
         }
+    }
+
+    pub fn for_tui() -> Self {
+        let mut config = Self::default();
+        config.log_to_file = std::env::var("IOTA_TUI_LOG_STDERR")
+            .map(|value| !otel_enabled_value(&value))
+            .unwrap_or(true);
+        config
     }
 }
 
@@ -80,11 +90,21 @@ fn build_resource() -> Resource {
 
 pub fn init(config: &TelemetryConfig) -> Result<OtelGuard> {
     let resource = build_resource();
+    let writer = if config.log_to_file {
+        let path = tui_log_path()?;
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)
+                .with_context(|| format!("failed to create log directory {}", parent.display()))?;
+        }
+        stderr::LogWriter::File(path)
+    } else {
+        stderr::LogWriter::Stderr
+    };
 
     if !config.enabled {
         let filter = logging_filter();
         tracing_subscriber::registry()
-            .with(stderr::stderr_layer().with_filter(filter))
+            .with(stderr::log_layer(writer).with_filter(filter))
             .try_init()
             .ok();
         return Ok(OtelGuard {
@@ -134,13 +154,13 @@ pub fn init(config: &TelemetryConfig) -> Result<OtelGuard> {
     let otel_log_layer =
         opentelemetry_appender_tracing::layer::OpenTelemetryTracingBridge::new(&logger_provider);
     let filter = logging_filter();
-    let stderr_layer = stderr::stderr_layer();
+    let log_layer = stderr::log_layer(writer);
 
     tracing_subscriber::registry()
         .with(filter)
         .with(otel_trace_layer)
         .with(otel_log_layer)
-        .with(stderr_layer)
+        .with(log_layer)
         .try_init()
         .ok();
 
@@ -149,6 +169,11 @@ pub fn init(config: &TelemetryConfig) -> Result<OtelGuard> {
         meter_provider: Some(meter_provider),
         logger_provider: Some(logger_provider),
     })
+}
+
+fn tui_log_path() -> Result<std::path::PathBuf> {
+    let home = dirs::home_dir().context("failed to resolve home directory for TUI logs")?;
+    Ok(home.join(".i6").join("logs").join("iota.log"))
 }
 
 fn logging_filter() -> EnvFilter {

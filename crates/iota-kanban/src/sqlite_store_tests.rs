@@ -1,10 +1,116 @@
 use crate::sqlite_store::SqliteKanbanStore;
 use crate::store::KanbanStore;
 use crate::types::*;
-use std::path::Path;
+use rusqlite::Connection;
+use std::path::{Path, PathBuf};
 
 fn open_memory() -> SqliteKanbanStore {
     SqliteKanbanStore::open(Path::new(":memory:")).unwrap()
+}
+
+fn temporary_database_path() -> (PathBuf, PathBuf) {
+    let directory = std::env::temp_dir().join(format!(
+        "iota-kanban-legacy-{}",
+        uuid::Uuid::new_v4()
+    ));
+    std::fs::create_dir(&directory).unwrap();
+    (directory.clone(), directory.join("kanban.db"))
+}
+
+#[test]
+fn opens_legacy_database_before_creating_event_uuid_index() {
+    let (temporary_directory, db_path) = temporary_database_path();
+    let conn = Connection::open(&db_path).unwrap();
+    conn.execute_batch(
+        "CREATE TABLE boards (
+             id INTEGER PRIMARY KEY,
+             slug TEXT UNIQUE NOT NULL,
+             name TEXT NOT NULL,
+             created_at INTEGER NOT NULL
+         );
+         CREATE TABLE tasks (
+             id INTEGER PRIMARY KEY,
+             board_id INTEGER NOT NULL,
+             title TEXT NOT NULL,
+             body TEXT,
+             status TEXT NOT NULL DEFAULT 'triage',
+             assignee TEXT,
+             priority INTEGER NOT NULL DEFAULT 0,
+             tags TEXT NOT NULL DEFAULT '[]',
+             workspace_kind TEXT,
+             workspace_path TEXT,
+             created_at INTEGER NOT NULL,
+             updated_at INTEGER NOT NULL,
+             claimed_at INTEGER,
+             claim_ttl_secs INTEGER NOT NULL DEFAULT 900
+         );
+         CREATE TABLE links (
+             from_id INTEGER NOT NULL,
+             to_id INTEGER NOT NULL,
+             kind TEXT NOT NULL,
+             PRIMARY KEY (from_id, to_id, kind)
+         );
+         CREATE TABLE comments (
+             id INTEGER PRIMARY KEY,
+             task_id INTEGER NOT NULL,
+             author TEXT NOT NULL,
+             body TEXT NOT NULL,
+             created_at INTEGER NOT NULL
+         );
+         CREATE TABLE runs (
+             id TEXT PRIMARY KEY,
+             task_id INTEGER NOT NULL,
+             profile TEXT NOT NULL,
+             status TEXT NOT NULL DEFAULT 'running',
+             started_at INTEGER NOT NULL,
+             finished_at INTEGER,
+             last_heartbeat INTEGER NOT NULL,
+             exit_code INTEGER,
+             output_summary TEXT
+         );
+         CREATE TABLE events (
+             id INTEGER PRIMARY KEY,
+             event_type TEXT NOT NULL,
+             payload TEXT NOT NULL,
+             created_at INTEGER NOT NULL
+         );
+         CREATE TABLE event_sync_cursors (
+             source TEXT PRIMARY KEY,
+             cursor INTEGER NOT NULL,
+             updated_at INTEGER NOT NULL
+         );
+         INSERT INTO events (event_type, payload, created_at)
+         VALUES ('board_created', '{}', 1);",
+    )
+    .unwrap();
+    drop(conn);
+
+    let store = SqliteKanbanStore::open(&db_path).unwrap();
+    let migrated = Connection::open(&db_path).unwrap();
+    let event_columns: Vec<String> = migrated
+        .prepare("PRAGMA table_info(events)")
+        .unwrap()
+        .query_map([], |row| row.get(1))
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap();
+    assert!(event_columns.iter().any(|column| column == "event_uuid"));
+
+    let index_exists: bool = migrated
+        .query_row(
+            "SELECT EXISTS(
+                 SELECT 1 FROM sqlite_master
+                 WHERE type = 'index' AND name = 'idx_events_uuid'
+             )",
+            [],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert!(index_exists);
+    assert!(store.list_boards().is_ok());
+    drop(migrated);
+    drop(store);
+    std::fs::remove_dir_all(temporary_directory).unwrap();
 }
 
 fn make_board(store: &SqliteKanbanStore) -> BoardId {

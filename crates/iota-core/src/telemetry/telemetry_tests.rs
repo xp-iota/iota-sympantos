@@ -39,3 +39,10 @@ fn empty_endpoint_does_not_enable_otlp() {
     assert!(!config.enabled);
     assert_eq!(config.endpoint, "http://localhost:4317");
 }
+
+#[test]
+fn tui_logging_defaults_to_file() {
+    let config = TelemetryConfig::for_tui();
+
+    assert!(config.log_to_file);
+}
